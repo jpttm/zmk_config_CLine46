@@ -73,13 +73,30 @@
 
     scroller {
         layers = <3>;
-        input-processors = 
+        input-processors =
             // <&zip_xy_transform INPUT_TRANSFORM_XY_SWAP>,        //X軸とY軸の入れ替え
-            // <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,       //X軸反転
-            <&zip_xy_transform INPUT_TRANSFORM_Y_INVERT>,       //Y軸反転
             <&zip_xy_to_scroll_mapper>,                         //スクロールモードに変更
-            <&zip_scroll_transform INPUT_TRANSFORM_X_INVERT>,   //スクロールのX軸反転
-            //<&zip_scroll_transform INPUT_TRANSFORM_Y_INVERT>,   //スクロールのY軸反転
-            <&zip_scroll_scaler 1 8>;                           //スクロール量を1/8倍
+            <&scroll_runtime_input_processor>;                  //速度・軸反転・軸スナップをDYA Studioから設定可能に
     };
+};
+
+// スクロール用のランタイム入力プロセッサ。
+//
+// 以前は zip_scroll_transform / zip_scroll_scaler / zip_xy_transform を
+// 静的に並べていたが、それらは再ビルドしないと変更できなかった。
+// scroll_runtime_input_processor に置き換えると、同じ調整が DYA Studio の
+// 「トラックボール設定」から行えるようになり、さらに軸スナップ
+// (移動を縦横どちらかに固定する機能。表計算ソフトで有用) も使えるようになる。
+//
+// 注意: このノードは runtime-input-processor.dtsi 内で /omit-if-no-ref/ 指定
+// されているため、ここで参照して初めて firmware に組み込まれる。参照が無いと
+// DYA Studio のプロセッサ一覧にも現れない。
+//
+// 下の値は従来の静的な設定と同じ体感になるよう合わせた初期値。
+// 一度 DYA Studio で変更すると、そちらが保存されて以後優先される。
+&scroll_runtime_input_processor {
+    scale-multiplier = <1>;
+    scale-divisor = <8>;    //旧 <&zip_scroll_scaler 1 8> 相当
+    x-invert;               //旧 <&zip_scroll_transform INPUT_TRANSFORM_X_INVERT> 相当
+    y-invert;               //旧 <&zip_xy_transform INPUT_TRANSFORM_Y_INVERT> 相当(変換前のY反転と等価)
 };
