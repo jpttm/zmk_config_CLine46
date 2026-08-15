@@ -228,28 +228,29 @@
     // 内容は DYA Studio から自由に書き換え可能(再ビルド不要)。
     // ============================================================
     runtime_macro_defaults {
-        // --- レイヤー7: 仮想デスクトップ / ウィンドウ ---
-        g7_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Up";    bindings = <&kp LG(TAB)>; };          //タスクビュー
-        g7_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Down";  bindings = <&kp LG(D)>; };            //デスクトップ表示
-        g7_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Left";  bindings = <&kp LC(LG(LEFT))>; };     //仮想デスクトップ左
-        g7_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Right"; bindings = <&kp LC(LG(RIGHT))>; };    //仮想デスクトップ右
+        // --- 検証用: 全レイヤー共通で 上=1 下=2 左=3 右=4 ---
+        // --- レイヤー7 ---
+        g7_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Up"; bindings = <&kp N1>; };  //上=1
+        g7_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Down"; bindings = <&kp N2>; };  //下=2
+        g7_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Left"; bindings = <&kp N3>; };  //左=3
+        g7_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Right"; bindings = <&kp N4>; };  //右=4
 
         // --- レイヤー8: ブラウザのタブ操作 ---
-        g8_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Up";    bindings = <&kp LC(T)>; };            //新しいタブ
-        g8_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Down";  bindings = <&kp LC(W)>; };            //タブを閉じる
-        g8_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Left";  bindings = <&kp LC(LS(TAB))>; };      //前のタブ
-        g8_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Right"; bindings = <&kp LC(TAB)>; };          //次のタブ
+        g8_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Up"; bindings = <&kp N1>; };  //上=1
+        g8_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Down"; bindings = <&kp N2>; };  //下=2
+        g8_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Left"; bindings = <&kp N3>; };  //左=3
+        g8_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Right"; bindings = <&kp N4>; };  //右=4
 
         // --- レイヤー9: ページ内ナビゲーション ---
-        g9_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Up";    bindings = <&kp LC(HOME)>; };         //先頭へ
-        g9_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Down";  bindings = <&kp LC(END)>; };          //末尾へ
-        g9_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Left";  bindings = <&kp LA(LEFT)>; };         //戻る
-        g9_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Right"; bindings = <&kp LA(RIGHT)>; };        //進む
+        g9_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Up"; bindings = <&kp N1>; };  //上=1
+        g9_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Down"; bindings = <&kp N2>; };  //下=2
+        g9_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Left"; bindings = <&kp N3>; };  //左=3
+        g9_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Right"; bindings = <&kp N4>; };  //右=4
 
         // --- レイヤー10: 編集 ---
-        g10_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Up";    bindings = <&kp LC(Z)>; };          //元に戻す
-        g10_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Down";  bindings = <&kp LC(Y)>; };          //やり直し
-        g10_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Left";  bindings = <&kp LC(C)>; };          //コピー
-        g10_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Right"; bindings = <&kp LC(V)>; };          //貼り付け
+        g10_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Up"; bindings = <&kp N1>; };  //上=1
+        g10_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Down"; bindings = <&kp N2>; };  //下=2
+        g10_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Left"; bindings = <&kp N3>; };  //左=3
+        g10_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Right"; bindings = <&kp N4>; };  //右=4
     };
 };
