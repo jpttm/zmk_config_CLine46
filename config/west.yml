@@ -8,6 +8,8 @@ manifest:
       url-base: https://github.com/caksoylar
     - name: takamaru-fpv  # <-- Battery level smoothing
       url-base: https://github.com/takamaru-fpv
+    - name: kot149     # <-- Mouse gesture
+      url-base: https://github.com/kot149
 
   projects:
     # ZMK: DYA Studio 用カスタム RPC サブシステム付き cormoran fork
@@ -77,5 +79,8 @@ manifest:
     - name: zmk-feature-non-lipo-battery-management
       remote: takamaru-fpv
       revision: voltage_division
+    - name: zmk-mouse-gesture
+      remote: kot149
+      revision: v1
   self:
     path: config
