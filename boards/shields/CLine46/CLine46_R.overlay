@@ -250,29 +250,6 @@
         <&kp LC(C)>,            //左: コピー
         <&kp LC(V)>;            //右: 貼り付け
 };
- //タブを閉じる
-        g7_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Left"; bindings = <&kp LC(LS(TAB))>; };  //前のタブ
-        g7_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Right"; bindings = <&kp LC(TAB)>; };  //次のタブ
-
-        // --- レイヤー8: 仮想デスクトップ / ウィンドウ ---
-        g8_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Up"; bindings = <&kp LG(TAB)>; };  //タスクビュー
-        g8_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Down"; bindings = <&kp LG(D)>; };  //デスクトップ表示
-        g8_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Left"; bindings = <&kp LC(LG(LEFT))>; };  //仮想デスクトップ左
-        g8_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Right"; bindings = <&kp LC(LG(RIGHT))>; };  //仮想デスクトップ右
-
-        // --- レイヤー9: ページ内ナビゲーション ---
-        g9_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Up"; bindings = <&kp LC(HOME)>; };  //先頭へ
-        g9_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Down"; bindings = <&kp LC(END)>; };  //末尾へ
-        g9_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Left"; bindings = <&kp LA(LEFT)>; };  //戻る
-        g9_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Right"; bindings = <&kp LA(RIGHT)>; };  //進む
-
-        // --- レイヤー10: 編集 ---
-        g10_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Up"; bindings = <&kp LC(Z)>; };  //元に戻す
-        g10_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Down"; bindings = <&kp LC(Y)>; };  //やり直し
-        g10_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Left"; bindings = <&kp LC(C)>; };  //コピー
-        g10_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Right"; bindings = <&kp LC(V)>; };  //貼り付け
-    };
-};
 
 // スクロール用のランタイム入力プロセッサ。
 //
