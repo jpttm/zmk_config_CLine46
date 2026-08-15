@@ -91,37 +91,52 @@
     //
     // 注意1: process-next を付けていないため、ベースの input-processors は
     //        適用されない。X軸反転はジェスチャー側にも明示的に必要。
-    // 注意2: これらのレイヤーにいる間はカーソルが動かない(suppress-movement)。
-    //        そのためジェスチャー専用の新規レイヤーとして確保している。
+    // 注意2: これらのレイヤーにいる間はカーソルを止めたい。
+    //        モジュールの suppress-movement は ZMK_INPUT_PROC_STOP を返すが、
+    //        ZMK の input_listener.c がレイヤー上書き経路でその戻り値を
+    //        握り潰す(process-next 無しの場合 return 0)ため効かない。
+    //        回避策として末尾に <&zip_xy_scaler 0 1> を置き、X/Y の値を
+    //        0 に潰してカーソルを固定する。
     // 注意3: レイヤーを減らす場合は、下の子ノードと対応する zip_gesture_N、
     //        runtime_macro_defaults の該当エントリをまとめて削除する。
+    //
+    // ★感度比較用の暫定設定: レイヤーごとに条件を変えてある。
+    //   L7  = 基準(現状のまま)
+    //   L8  = ノイズ除去のみ追加
+    //   L9  = ノイズ除去 + ストロークを長く
+    //   L10 = ノイズ除去 + 横方向の感度を2倍
     // ============================================================
     gesture_layer_7 {
         layers = <7>;
         input-processors =
             <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,       //X軸反転(ベースと合わせる)
-            <&zip_gesture_7>;
+            <&zip_gesture_7>,
+            <&zip_xy_scaler 0 1>;                               //カーソル固定
     };
 
     gesture_layer_8 {
         layers = <8>;
         input-processors =
             <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
-            <&zip_gesture_8>;
+            <&zip_gesture_8>,
+            <&zip_xy_scaler 0 1>;
     };
 
     gesture_layer_9 {
         layers = <9>;
         input-processors =
             <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
-            <&zip_gesture_9>;
+            <&zip_gesture_9>,
+            <&zip_xy_scaler 0 1>;
     };
 
     gesture_layer_10 {
         layers = <10>;
         input-processors =
             <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
-            <&zip_gesture_10>;
+            <&zip_x_scaler 2 1>,                                //横方向の感度を2倍にしてから判定
+            <&zip_gesture_10>,
+            <&zip_xy_scaler 0 1>;
     };
 };
 
@@ -166,6 +181,7 @@
         suppress-movement;
         enable-eager-mode;
         stroke-size = <200>;
+        movement-threshold = <5>;   //★微小移動を無視(ノイズ除去)
 
         gesture8_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 4>; };
         gesture8_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 5>; };
@@ -179,7 +195,8 @@
         always-active;
         suppress-movement;
         enable-eager-mode;
-        stroke-size = <200>;
+        stroke-size = <350>;        //★ストロークを長めに
+        movement-threshold = <5>;
 
         gesture9_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 8>; };
         gesture9_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 9>; };
@@ -194,6 +211,7 @@
         suppress-movement;
         enable-eager-mode;
         stroke-size = <200>;
+        movement-threshold = <5>;
 
         gesture10_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 12>; };
         gesture10_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 13>; };
