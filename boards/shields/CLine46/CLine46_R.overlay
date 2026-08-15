@@ -228,6 +228,13 @@
 // スロット番号順に並べる (0=L7上, 1=L7下, 2=L7左, 3=L7右, 4=L8上, ...)。
 // 保存済みの割り当てがあればそちらが優先され、無ければここが使われる。
 &gesture_action {
+    // 設定画面にスロット番号ではなくこの名前が出る。
+    slot-names =
+        "L7 Up", "L7 Down", "L7 Left", "L7 Right",
+        "L8 Up", "L8 Down", "L8 Left", "L8 Right",
+        "L9 Up", "L9 Down", "L9 Left", "L9 Right",
+        "L10 Up", "L10 Down", "L10 Left", "L10 Right";
+
     default-bindings =
         // --- レイヤー7: ブラウザのタブ操作 ---
         <&kp LC(T)>,            //上: 新しいタブ
