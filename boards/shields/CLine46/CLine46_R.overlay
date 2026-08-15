@@ -6,6 +6,7 @@
 #include <behaviors.dtsi>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/mouse-gesture.h>
+#include <behaviors/gesture_action.dtsi>
 
 &default_transform {
     col-offset = <6>;
@@ -97,7 +98,7 @@
     //        の二重の理由で、結局そのまま HID に流れてカーソルが動いてしまう。
     //        代わりに末尾の <&zip_xy_scaler 0 1> で X/Y を 0 に潰して固定する。
     // 注意3: レイヤーを減らす場合は、下の子ノードと対応する zip_gesture_N、
-    //        runtime_macro_defaults の該当エントリをまとめて削除する。
+    //        &gesture_action の default-bindings もあわせて詰める。
     //
     // 感度は実機比較の結果 4レイヤーとも同一設定に確定した。
     //   stroke-size 100 (縦横とも約4.2mm) / movement-threshold 5
@@ -143,19 +144,18 @@
 //   ノード名 gestureN_M :  N = レイヤー番号 / M = 方向コード
 //   M: 1=上 2=下 3=左 4=右
 //
-//   実行先は Runtime Macro スロット。スロットと名前の対応は下の
-//   runtime_macro_defaults で固定している。
+//   実行先は &gesture_action のスロット。初期値は下の default-bindings。
 //
-//     レイヤー7  : slot  0(上)  1(下)  2(左)  3(右)   -> G7-*
-//     レイヤー8  : slot  4(上)  5(下)  6(左)  7(右)   -> G8-*
-//     レイヤー9  : slot  8(上)  9(下) 10(左) 11(右)   -> G9-*
-//     レイヤー10 : slot 12(上) 13(下) 14(左) 15(右)   -> G10-*
+//     レイヤー7  : slot  0(上)  1(下)  2(左)  3(右)
+//     レイヤー8  : slot  4(上)  5(下)  6(左)  7(右)
+//     レイヤー9  : slot  8(上)  9(下) 10(左) 11(右)
+//     レイヤー10 : slot 12(上) 13(下) 14(左) 15(右)
 //
 //   ジェスチャーの個数・長さに上限は無い(フォークした側でトライ木を
 //   devicetree から実寸確保するようにしたため)。増やした分だけ、
 //   1ストロークあたり20バイト程度ずつ増えるだけ。
-//   ただし Runtime Macro のスロットは全16個で頭打ちなので、
-//   方向を増やすにはスロットの割り当てを見直す必要がある。
+//   スロットは 32 個あり(CONFIG_ZMK_GESTURE_ACTION_COUNT)、
+//   Runtime Macro とは独立しているので通常マクロを圧迫しない。
 // ============================================================
 / {
     zip_gesture_7: zip_gesture_7 {
@@ -168,10 +168,10 @@
         stroke-size = <100>;      //縦横とも約4.2mm
         movement-threshold = <5>; //微小移動を無視(ノイズ除去)
 
-        gesture7_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 0>; };
-        gesture7_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 1>; };
-        gesture7_3 { pattern = <GESTURE_LEFT>;  bindings = <&rmacro 2>; };
-        gesture7_4 { pattern = <GESTURE_RIGHT>; bindings = <&rmacro 3>; };
+        gesture7_1 { pattern = <GESTURE_UP>;    bindings = <&gesture_action 0>; };
+        gesture7_2 { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 1>; };
+        gesture7_3 { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 2>; };
+        gesture7_4 { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 3>; };
     };
 
     zip_gesture_8: zip_gesture_8 {
@@ -184,10 +184,10 @@
         stroke-size = <100>;      //縦横とも約4.2mm
         movement-threshold = <5>; //微小移動を無視(ノイズ除去)
 
-        gesture8_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 4>; };
-        gesture8_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 5>; };
-        gesture8_3 { pattern = <GESTURE_LEFT>;  bindings = <&rmacro 6>; };
-        gesture8_4 { pattern = <GESTURE_RIGHT>; bindings = <&rmacro 7>; };
+        gesture8_1 { pattern = <GESTURE_UP>;    bindings = <&gesture_action 4>; };
+        gesture8_2 { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 5>; };
+        gesture8_3 { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 6>; };
+        gesture8_4 { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 7>; };
     };
 
     zip_gesture_9: zip_gesture_9 {
@@ -200,10 +200,10 @@
         stroke-size = <100>;      //縦横とも約4.2mm
         movement-threshold = <5>; //微小移動を無視(ノイズ除去)
 
-        gesture9_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 8>; };
-        gesture9_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 9>; };
-        gesture9_3 { pattern = <GESTURE_LEFT>;  bindings = <&rmacro 10>; };
-        gesture9_4 { pattern = <GESTURE_RIGHT>; bindings = <&rmacro 11>; };
+        gesture9_1 { pattern = <GESTURE_UP>;    bindings = <&gesture_action 8>; };
+        gesture9_2 { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 9>; };
+        gesture9_3 { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 10>; };
+        gesture9_4 { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 11>; };
     };
 
     zip_gesture_10: zip_gesture_10 {
@@ -216,24 +216,41 @@
         stroke-size = <100>;      //縦横とも約4.2mm
         movement-threshold = <5>; //微小移動を無視(ノイズ除去)
 
-        gesture10_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 12>; };
-        gesture10_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 13>; };
-        gesture10_3 { pattern = <GESTURE_LEFT>;  bindings = <&rmacro 14>; };
-        gesture10_4 { pattern = <GESTURE_RIGHT>; bindings = <&rmacro 15>; };
+        gesture10_1 { pattern = <GESTURE_UP>;    bindings = <&gesture_action 12>; };
+        gesture10_2 { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 13>; };
+        gesture10_3 { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 14>; };
+        gesture10_4 { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 15>; };
     };
 
-    // ============================================================
-    // ジェスチャー用 Runtime Macro の初期値
-    //
-    // 宣言順にスロット 0〜15 へ確定的に割り当てられる。
-    // DYA Studio のマクロ一覧には下記の名前で並ぶので、
-    // 番号ではなく名前を見て編集すればよい。
-    // 内容は DYA Studio から自由に書き換え可能(再ビルド不要)。
-    // ============================================================
-    runtime_macro_defaults {
+};
+
+// ジェスチャー各スロットの初期値。
+// スロット番号順に並べる (0=L7上, 1=L7下, 2=L7左, 3=L7右, 4=L8上, ...)。
+// 保存済みの割り当てがあればそちらが優先され、無ければここが使われる。
+&gesture_action {
+    default-bindings =
         // --- レイヤー7: ブラウザのタブ操作 ---
-        g7_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Up"; bindings = <&kp LC(T)>; };  //新しいタブ
-        g7_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Down"; bindings = <&kp LC(W)>; };  //タブを閉じる
+        <&kp LC(T)>,            //上: 新しいタブ
+        <&kp LC(W)>,            //下: タブを閉じる
+        <&kp LC(LS(TAB))>,      //左: 前のタブ
+        <&kp LC(TAB)>,          //右: 次のタブ
+        // --- レイヤー8: 仮想デスクトップ / ウィンドウ ---
+        <&kp LG(TAB)>,          //上: タスクビュー
+        <&kp LG(D)>,            //下: デスクトップ表示
+        <&kp LC(LG(LEFT))>,     //左: 仮想デスクトップ左
+        <&kp LC(LG(RIGHT))>,    //右: 仮想デスクトップ右
+        // --- レイヤー9: ページ内ナビゲーション ---
+        <&kp LC(HOME)>,         //上: 先頭へ
+        <&kp LC(END)>,          //下: 末尾へ
+        <&kp LA(LEFT)>,         //左: 戻る
+        <&kp LA(RIGHT)>,        //右: 進む
+        // --- レイヤー10: 編集 ---
+        <&kp LC(Z)>,            //上: 元に戻す
+        <&kp LC(Y)>,            //下: やり直し
+        <&kp LC(C)>,            //左: コピー
+        <&kp LC(V)>;            //右: 貼り付け
+};
+ //タブを閉じる
         g7_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Left"; bindings = <&kp LC(LS(TAB))>; };  //前のタブ
         g7_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Right"; bindings = <&kp LC(TAB)>; };  //次のタブ
 

@@ -86,5 +86,10 @@ manifest:
     - name: zmk-mouse-gesture
       remote: jpttm
       revision: v1-idle-reset
+    # ジェスチャー専用のランタイム設定可能なアクション。
+    # Runtime Macro のスロットを消費せずに済ませるための自作モジュール。
+    - name: zmk-feature-gesture-action
+      remote: jpttm
+      revision: main
   self:
     path: config
