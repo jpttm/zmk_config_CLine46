@@ -103,12 +103,10 @@
     // 注意3: レイヤーを減らす場合は、下の子ノードと対応する zip_gesture_N、
     //        runtime_macro_defaults の該当エントリをまとめて削除する。
     //
-    // ★感度比較用の暫定設定 (第2ラウンド)
-    //   全レイヤー movement-threshold = 5 固定。距離と対称性だけを振る。
-    //   L7  = 対称 stroke 100  (全方向 4.2mm)   ← 全方向を機敏に
-    //   L8  = 対称 stroke 150  (全方向 6.4mm)   ← 中間
-    //   L9  = 横2倍 stroke 200 (縦8.5/横4.2mm)  ← 前回の勝者(基準・再現確認)
-    //   L10 = 横1.5倍 stroke 120(縦5.1/横3.4mm) ← 機敏さと非対称の折衷
+    // 感度は実機比較の結果 4レイヤーとも同一設定に確定した。
+    //   stroke-size 100 (縦横とも約4.2mm) / movement-threshold 5
+    // 縦横で距離を変える案(横だけ増幅)も試したが、累積残留バグを直した後は
+    // 利点が無く、縦の斜めブレ許容量を削るだけだったため対称に戻している。
     // ============================================================
     gesture_layer_7 {
         layers = <7>;
@@ -130,7 +128,6 @@
         layers = <9>;
         input-processors =
             <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
-            <&zip_x_scaler 2 1>,                                //横2倍(前回のL10と同条件)
             <&zip_gesture_9>,
             <&zip_xy_scaler 0 1>;
     };
@@ -139,7 +136,6 @@
         layers = <10>;
         input-processors =
             <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
-            <&zip_x_scaler 3 2>,                                //横1.5倍
             <&zip_gesture_10>,
             <&zip_xy_scaler 0 1>;
     };
@@ -159,8 +155,9 @@
 //     レイヤー9  : slot  8(上)  9(下) 10(左) 11(右)   -> G9-*
 //     レイヤー10 : slot 12(上) 13(下) 14(左) 15(右)   -> G10-*
 //
-//   1インスタンスあたりジェスチャーは最大16個まで定義できる。
-//   個数を増やしても RAM 使用量は変わらない(トライ木のプールが固定確保のため)。
+//   ジェスチャーの個数・長さに上限は無い(フォークした側でトライ木を
+//   devicetree から実寸確保するようにしたため)。増やした分だけ、
+//   1ストロークあたり20バイト程度ずつ増えるだけ。
 //   ただし Runtime Macro のスロットは全16個で頭打ちなので、
 //   方向を増やすにはスロットの割り当てを見直す必要がある。
 // ============================================================
@@ -172,8 +169,8 @@
         enable-eager-mode;      //パターン確定時に即実行
         gesture-cooldown-ms = <200>;  //発火後の待ち時間(既定500から短縮)
         idle-reset-ms = <400>;        //中途半端な累積を400ms無操作で破棄
-        stroke-size = <100>;        //★対称 4.2mm
-        movement-threshold = <5>;
+        stroke-size = <100>;      //縦横とも約4.2mm
+        movement-threshold = <5>; //微小移動を無視(ノイズ除去)
 
         gesture7_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 0>; };
         gesture7_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 1>; };
@@ -188,8 +185,8 @@
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
         idle-reset-ms = <400>;
-        stroke-size = <150>;        //★対称 6.4mm
-        movement-threshold = <5>;
+        stroke-size = <100>;      //縦横とも約4.2mm
+        movement-threshold = <5>; //微小移動を無視(ノイズ除去)
 
         gesture8_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 4>; };
         gesture8_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 5>; };
@@ -204,8 +201,8 @@
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
         idle-reset-ms = <400>;
-        stroke-size = <200>;        //★横2倍と併用 = 前回のL10と同条件
-        movement-threshold = <5>;
+        stroke-size = <100>;      //縦横とも約4.2mm
+        movement-threshold = <5>; //微小移動を無視(ノイズ除去)
 
         gesture9_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 8>; };
         gesture9_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 9>; };
@@ -220,8 +217,8 @@
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
         idle-reset-ms = <400>;
-        stroke-size = <120>;        //★横1.5倍と併用
-        movement-threshold = <5>;
+        stroke-size = <100>;      //縦横とも約4.2mm
+        movement-threshold = <5>; //微小移動を無視(ノイズ除去)
 
         gesture10_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 12>; };
         gesture10_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 13>; };
@@ -238,29 +235,28 @@
     // 内容は DYA Studio から自由に書き換え可能(再ビルド不要)。
     // ============================================================
     runtime_macro_defaults {
-        // --- 検証用: 全レイヤー共通で 上=1 下=2 左=3 右=4 ---
-        // --- レイヤー7 ---
-        g7_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Up"; bindings = <&kp N1>; };  //上=1
-        g7_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Down"; bindings = <&kp N2>; };  //下=2
-        g7_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Left"; bindings = <&kp N3>; };  //左=3
-        g7_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Right"; bindings = <&kp N4>; };  //右=4
+        // --- レイヤー7: ブラウザのタブ操作 ---
+        g7_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Up"; bindings = <&kp LC(T)>; };  //新しいタブ
+        g7_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Down"; bindings = <&kp LC(W)>; };  //タブを閉じる
+        g7_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Left"; bindings = <&kp LC(LS(TAB))>; };  //前のタブ
+        g7_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G7-Right"; bindings = <&kp LC(TAB)>; };  //次のタブ
 
-        // --- レイヤー8: ブラウザのタブ操作 ---
-        g8_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Up"; bindings = <&kp N1>; };  //上=1
-        g8_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Down"; bindings = <&kp N2>; };  //下=2
-        g8_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Left"; bindings = <&kp N3>; };  //左=3
-        g8_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Right"; bindings = <&kp N4>; };  //右=4
+        // --- レイヤー8: 仮想デスクトップ / ウィンドウ ---
+        g8_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Up"; bindings = <&kp LG(TAB)>; };  //タスクビュー
+        g8_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Down"; bindings = <&kp LG(D)>; };  //デスクトップ表示
+        g8_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Left"; bindings = <&kp LC(LG(LEFT))>; };  //仮想デスクトップ左
+        g8_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G8-Right"; bindings = <&kp LC(LG(RIGHT))>; };  //仮想デスクトップ右
 
         // --- レイヤー9: ページ内ナビゲーション ---
-        g9_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Up"; bindings = <&kp N1>; };  //上=1
-        g9_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Down"; bindings = <&kp N2>; };  //下=2
-        g9_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Left"; bindings = <&kp N3>; };  //左=3
-        g9_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Right"; bindings = <&kp N4>; };  //右=4
+        g9_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Up"; bindings = <&kp LC(HOME)>; };  //先頭へ
+        g9_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Down"; bindings = <&kp LC(END)>; };  //末尾へ
+        g9_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Left"; bindings = <&kp LA(LEFT)>; };  //戻る
+        g9_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G9-Right"; bindings = <&kp LA(RIGHT)>; };  //進む
 
         // --- レイヤー10: 編集 ---
-        g10_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Up"; bindings = <&kp N1>; };  //上=1
-        g10_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Down"; bindings = <&kp N2>; };  //下=2
-        g10_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Left"; bindings = <&kp N3>; };  //左=3
-        g10_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Right"; bindings = <&kp N4>; };  //右=4
+        g10_up   { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Up"; bindings = <&kp LC(Z)>; };  //元に戻す
+        g10_down { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Down"; bindings = <&kp LC(Y)>; };  //やり直し
+        g10_left { compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Left"; bindings = <&kp LC(C)>; };  //コピー
+        g10_right{ compatible = "cormoran,runtime-macro-default"; macro-name = "G10-Right"; bindings = <&kp LC(V)>; };  //貼り付け
     };
 };
