@@ -103,11 +103,12 @@
     // 注意3: レイヤーを減らす場合は、下の子ノードと対応する zip_gesture_N、
     //        runtime_macro_defaults の該当エントリをまとめて削除する。
     //
-    // ★感度比較用の暫定設定: レイヤーごとに条件を変えてある。
-    //   L7  = 基準(現状のまま)
-    //   L8  = ノイズ除去のみ追加
-    //   L9  = ノイズ除去 + ストロークを長く
-    //   L10 = ノイズ除去 + 横方向の感度を2倍
+    // ★感度比較用の暫定設定 (第2ラウンド)
+    //   全レイヤー movement-threshold = 5 固定。距離と対称性だけを振る。
+    //   L7  = 対称 stroke 100  (全方向 4.2mm)   ← 全方向を機敏に
+    //   L8  = 対称 stroke 150  (全方向 6.4mm)   ← 中間
+    //   L9  = 横2倍 stroke 200 (縦8.5/横4.2mm)  ← 前回の勝者(基準・再現確認)
+    //   L10 = 横1.5倍 stroke 120(縦5.1/横3.4mm) ← 機敏さと非対称の折衷
     // ============================================================
     gesture_layer_7 {
         layers = <7>;
@@ -129,6 +130,7 @@
         layers = <9>;
         input-processors =
             <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
+            <&zip_x_scaler 2 1>,                                //横2倍(前回のL10と同条件)
             <&zip_gesture_9>,
             <&zip_xy_scaler 0 1>;
     };
@@ -137,7 +139,7 @@
         layers = <10>;
         input-processors =
             <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
-            <&zip_x_scaler 2 1>,                                //横方向の感度を2倍にしてから判定
+            <&zip_x_scaler 3 2>,                                //横1.5倍
             <&zip_gesture_10>,
             <&zip_xy_scaler 0 1>;
     };
@@ -170,7 +172,8 @@
         enable-eager-mode;      //パターン確定時に即実行
         gesture-cooldown-ms = <200>;  //発火後の待ち時間(既定500から短縮)
         idle-reset-ms = <400>;        //中途半端な累積を400ms無操作で破棄
-        stroke-size = <200>;    //1ストロークと判定する移動量。感度が合わなければここを調整
+        stroke-size = <100>;        //★対称 4.2mm
+        movement-threshold = <5>;
 
         gesture7_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 0>; };
         gesture7_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 1>; };
@@ -185,8 +188,8 @@
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
         idle-reset-ms = <400>;
-        stroke-size = <200>;
-        movement-threshold = <5>;   //★微小移動を無視(ノイズ除去)
+        stroke-size = <150>;        //★対称 6.4mm
+        movement-threshold = <5>;
 
         gesture8_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 4>; };
         gesture8_2 { pattern = <GESTURE_DOWN>;  bindings = <&rmacro 5>; };
@@ -201,7 +204,7 @@
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
         idle-reset-ms = <400>;
-        stroke-size = <350>;        //★ストロークを長めに
+        stroke-size = <200>;        //★横2倍と併用 = 前回のL10と同条件
         movement-threshold = <5>;
 
         gesture9_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 8>; };
@@ -217,7 +220,7 @@
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
         idle-reset-ms = <400>;
-        stroke-size = <200>;
+        stroke-size = <120>;        //★横1.5倍と併用
         movement-threshold = <5>;
 
         gesture10_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 12>; };
