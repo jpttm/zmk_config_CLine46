@@ -110,9 +110,6 @@
         };
 
 
-        // レイヤー6〜9 はマウスジェスチャー専用。
-        // このレイヤーにいる間トラックボールはジェスチャー認識に占有され、
-        // カーソルは動きません(CLine46_R.overlay の suppress-movement)。
         layer_6 {
             bindings = <
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
@@ -123,6 +120,10 @@
         };
 
 
+        // レイヤー7〜10 はマウスジェスチャー専用の新規レイヤー。
+        // このレイヤーにいる間トラックボールはジェスチャー認識に占有され、
+        // カーソルは動きません(CLine46_R.overlay の suppress-movement)。
+        // 通常のキー入力は &trans のまま下位レイヤーに透過する。
         layer_7 {
             bindings = <
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
@@ -144,6 +145,16 @@
 
 
         layer_9 {
+            bindings = <
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+         &trans   &trans   &trans   &trans   &trans   &trans      &trans   &trans                     &trans   &trans
+            >;
+        };
+
+
+        layer_10 {
             bindings = <
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
