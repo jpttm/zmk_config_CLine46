@@ -68,12 +68,25 @@
 // Overrides for the input listener node
 &trackball_listener {
     status = "okay";
+
+    // ジェスチャーはレイヤー上書き(layers = <N>)ではなくベースチェーンに並べる。
+    // どのレイヤーで動くかは各インスタンスの active-layers が決めるので、
+    // レイヤーとグループの対応を再ビルドなしに変更できる。
+    //
+    // カーソル固定は suppress-movement が担当する。以前は STOP を返す実装が
+    // 効かず zip_xy_scaler 0 1 で代用していたが、値を0に潰す方式に直したため
+    // 不要になった。レイヤー上書きを使わないので X軸反転の二重指定も不要。
     input-processors =<&mouse_runtime_input_processor>,
         //<&zip_xy_transform INPUT_TRANSFORM_Y_INVERT>;         //Y軸反転
         //<&zip_xy_transform INPUT_TRANSFORM_XY_SWAP>,        //X軸とY軸の入れ替え
-        <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>;       //X軸反転
+        <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,       //X軸反転
         //<&zip_temp_layer 2 1000>;                            //オートマウスレイヤーの選択;
-
+        <&zip_gesture_1>,
+        <&zip_gesture_2>,
+        <&zip_gesture_3>,
+        <&zip_gesture_4>,
+        <&zip_gesture_5>,
+        <&zip_gesture_6>;
 
     scroller {
         layers = <3>;
@@ -82,195 +95,183 @@
             <&zip_xy_to_scroll_mapper>,                         //スクロールモードに変更
             <&scroll_runtime_input_processor>;                  //速度・軸反転・軸スナップをDYA Studioから設定可能に
     };
-
-    // ============================================================
-    // マウスジェスチャー: レイヤー7〜10 をジェスチャー専用レイヤーに割り当て
-    //
-    // 注意1: process-next を付けていないため、ベースの input-processors は
-    //        適用されない。X軸反転はジェスチャー側にも明示的に必要。
-    // 注意2: これらのレイヤーにいる間はカーソルを止めたい。
-    //        モジュールの suppress-movement は使わない(意図的に外してある)。
-    //        あれは ZMK_INPUT_PROC_STOP を返すが、
-    //          (a) apply_config() は STOP を受けた時点でチェーンを打ち切るため
-    //              後段の zip_xy_scaler に到達しない
-    //          (b) input_listener.c はレイヤー上書き経路でその STOP を
-    //              握り潰す(process-next 無しなら return 0)
-    //        の二重の理由で、結局そのまま HID に流れてカーソルが動いてしまう。
-    //        代わりに末尾の <&zip_xy_scaler 0 1> で X/Y を 0 に潰して固定する。
-    // 注意3: レイヤーを減らす場合は、下の子ノードと対応する zip_gesture_N、
-    //        &gesture_action の default-bindings もあわせて詰める。
-    //
-    // 感度は実機比較の結果 4レイヤーとも同一設定に確定した。
-    //   stroke-size 100 (縦横とも約4.2mm) / movement-threshold 5
-    // 縦横で距離を変える案(横だけ増幅)も試したが、累積残留バグを直した後は
-    // 利点が無く、縦の斜めブレ許容量を削るだけだったため対称に戻している。
-    // ============================================================
-    // レイヤー5 はレイヤー7 と同じジェスチャーセットを共有する。
-    // 新しいプロセッサを作らず既存の zip_gesture_7 を指しているだけなので、
-    // RAM もスロットも増えない(slot 0〜3 を共有)。
-    // 別のセットにしたい場合は zip_gesture_8/9/10 に差し替えるだけでよい。
-    //
-    // input_listener.c は一致した最初の上書きだけを実行して抜けるため、
-    // 複数レイヤーが同じプロセッサを指していても累積値が混ざることはない。
-    gesture_layer_5 {
-        layers = <5>;
-        input-processors =
-            <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
-            <&zip_gesture_7>,
-            <&zip_xy_scaler 0 1>;
-    };
-
-    gesture_layer_7 {
-        layers = <7>;
-        input-processors =
-            <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,       //X軸反転(ベースと合わせる)
-            <&zip_gesture_7>,
-            <&zip_xy_scaler 0 1>;                               //カーソル固定
-    };
-
-    gesture_layer_8 {
-        layers = <8>;
-        input-processors =
-            <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
-            <&zip_gesture_8>,
-            <&zip_xy_scaler 0 1>;
-    };
-
-    gesture_layer_9 {
-        layers = <9>;
-        input-processors =
-            <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
-            <&zip_gesture_9>,
-            <&zip_xy_scaler 0 1>;
-    };
-
-    gesture_layer_10 {
-        layers = <10>;
-        input-processors =
-            <&zip_xy_transform INPUT_TRANSFORM_X_INVERT>,
-            <&zip_gesture_10>,
-            <&zip_xy_scaler 0 1>;
-    };
 };
 
 // ============================================================
 // マウスジェスチャー定義
 //
-//   ノード名 gestureN_M :  N = レイヤー番号 / M = 方向コード
-//   M: 1=上 2=下 3=左 4=右
+//   6グループ。各グループが上下左右の4スロットを持つ(合計24スロット)。
+//   どのレイヤーで動くかは active-layers のビットマスクで決まり、
+//   設定画面から再ビルドなしに変更できる。
 //
-//   実行先は &gesture_action のスロット。初期値は下の default-bindings。
+//     グループ1 : slot  0〜3     グループ4 : slot 12〜15
+//     グループ2 : slot  4〜7     グループ5 : slot 16〜19
+//     グループ3 : slot  8〜11    グループ6 : slot 20〜23
 //
-//     レイヤー7  : slot  0(上)  1(下)  2(左)  3(右)
-//     レイヤー8  : slot  4(上)  5(下)  6(左)  7(右)
-//     レイヤー9  : slot  8(上)  9(下) 10(左) 11(右)
-//     レイヤー10 : slot 12(上) 13(下) 14(左) 15(右)
+//   注意: active-layers = 0 は「全レイヤーで動く」という意味になる。
+//   未使用のグループは使わないレイヤー(BIT(31))を指しておくこと。
 //
-//   ジェスチャーの個数・長さに上限は無い(フォークした側でトライ木を
-//   devicetree から実寸確保するようにしたため)。増やした分だけ、
-//   1ストロークあたり20バイト程度ずつ増えるだけ。
-//   スロットは 32 個あり(CONFIG_ZMK_GESTURE_ACTION_COUNT)、
-//   Runtime Macro とは独立しているので通常マクロを圧迫しない。
+//   感度は実機比較の結果 全グループ同一に確定した。
+//   縦横で距離を変える案も試したが、累積残留バグを直した後は利点が無く、
+//   縦の斜めブレ許容量を削るだけだったため対称に戻している。
 // ============================================================
 / {
-    zip_gesture_7: zip_gesture_7 {
+    // グループ1: レイヤー7 と 5 / slot 0〜3
+    zip_gesture_1: zip_gesture_1 {
         compatible = "zmk,input-processor-mouse-gesture";
         #input-processor-cells = <0>;
-        always-active;          //レイヤー上書きで動作範囲が限定されるため専用の起動キーは不要
-        enable-eager-mode;      //パターン確定時に即実行
-        gesture-cooldown-ms = <200>;  //発火後の待ち時間(既定500から短縮)
-        idle-reset-ms = <400>;        //中途半端な累積を400ms無操作で破棄
-        stroke-size = <100>;      //縦横とも約4.2mm
-        movement-threshold = <5>; //微小移動を無視(ノイズ除去)
-
-        gesture7_1 { pattern = <GESTURE_UP>;    bindings = <&gesture_action 0>; };
-        gesture7_2 { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 1>; };
-        gesture7_3 { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 2>; };
-        gesture7_4 { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 3>; };
-    };
-
-    zip_gesture_8: zip_gesture_8 {
-        compatible = "zmk,input-processor-mouse-gesture";
-        #input-processor-cells = <0>;
+        display-name = "Group 1";
+        active-layers = <(BIT(7) | BIT(5))>;
         always-active;
+        suppress-movement;      //有効なレイヤーではカーソルを固定
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
         idle-reset-ms = <400>;
         stroke-size = <100>;      //縦横とも約4.2mm
         movement-threshold = <5>; //微小移動を無視(ノイズ除去)
 
-        gesture8_1 { pattern = <GESTURE_UP>;    bindings = <&gesture_action 4>; };
-        gesture8_2 { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 5>; };
-        gesture8_3 { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 6>; };
-        gesture8_4 { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 7>; };
+        up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action 0>; };
+        down  { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 1>; };
+        left  { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 2>; };
+        right { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 3>; };
     };
 
-    zip_gesture_9: zip_gesture_9 {
+    // グループ2: レイヤー8 / slot 4〜7
+    zip_gesture_2: zip_gesture_2 {
         compatible = "zmk,input-processor-mouse-gesture";
         #input-processor-cells = <0>;
+        display-name = "Group 2";
+        active-layers = <BIT(8)>;
         always-active;
+        suppress-movement;
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
         idle-reset-ms = <400>;
-        stroke-size = <100>;      //縦横とも約4.2mm
-        movement-threshold = <5>; //微小移動を無視(ノイズ除去)
+        stroke-size = <100>;
+        movement-threshold = <5>;
 
-        gesture9_1 { pattern = <GESTURE_UP>;    bindings = <&gesture_action 8>; };
-        gesture9_2 { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 9>; };
-        gesture9_3 { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 10>; };
-        gesture9_4 { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 11>; };
+        up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action 4>; };
+        down  { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 5>; };
+        left  { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 6>; };
+        right { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 7>; };
     };
 
-    zip_gesture_10: zip_gesture_10 {
+    // グループ3: レイヤー9 / slot 8〜11
+    zip_gesture_3: zip_gesture_3 {
         compatible = "zmk,input-processor-mouse-gesture";
         #input-processor-cells = <0>;
+        display-name = "Group 3";
+        active-layers = <BIT(9)>;
         always-active;
+        suppress-movement;
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
         idle-reset-ms = <400>;
-        stroke-size = <100>;      //縦横とも約4.2mm
-        movement-threshold = <5>; //微小移動を無視(ノイズ除去)
+        stroke-size = <100>;
+        movement-threshold = <5>;
 
-        gesture10_1 { pattern = <GESTURE_UP>;    bindings = <&gesture_action 12>; };
-        gesture10_2 { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 13>; };
-        gesture10_3 { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 14>; };
-        gesture10_4 { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 15>; };
+        up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action 8>; };
+        down  { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 9>; };
+        left  { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 10>; };
+        right { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 11>; };
     };
 
+    // グループ4: レイヤー10 / slot 12〜15
+    zip_gesture_4: zip_gesture_4 {
+        compatible = "zmk,input-processor-mouse-gesture";
+        #input-processor-cells = <0>;
+        display-name = "Group 4";
+        active-layers = <BIT(10)>;
+        always-active;
+        suppress-movement;
+        enable-eager-mode;
+        gesture-cooldown-ms = <200>;
+        idle-reset-ms = <400>;
+        stroke-size = <100>;
+        movement-threshold = <5>;
+
+        up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action 12>; };
+        down  { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 13>; };
+        left  { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 14>; };
+        right { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 15>; };
+    };
+
+    // グループ5: 未割り当て / slot 16〜19
+    zip_gesture_5: zip_gesture_5 {
+        compatible = "zmk,input-processor-mouse-gesture";
+        #input-processor-cells = <0>;
+        display-name = "Group 5";
+        active-layers = <BIT(31)>;   //どのレイヤーにも割り当てていない状態
+        always-active;
+        suppress-movement;
+        enable-eager-mode;
+        gesture-cooldown-ms = <200>;
+        idle-reset-ms = <400>;
+        stroke-size = <100>;
+        movement-threshold = <5>;
+
+        up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action 16>; };
+        down  { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 17>; };
+        left  { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 18>; };
+        right { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 19>; };
+    };
+
+    // グループ6: 未割り当て / slot 20〜23
+    zip_gesture_6: zip_gesture_6 {
+        compatible = "zmk,input-processor-mouse-gesture";
+        #input-processor-cells = <0>;
+        display-name = "Group 6";
+        active-layers = <BIT(31)>;
+        always-active;
+        suppress-movement;
+        enable-eager-mode;
+        gesture-cooldown-ms = <200>;
+        idle-reset-ms = <400>;
+        stroke-size = <100>;
+        movement-threshold = <5>;
+
+        up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action 20>; };
+        down  { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 21>; };
+        left  { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 22>; };
+        right { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 23>; };
+    };
 };
 
 // ジェスチャー各スロットの初期値。
-// スロット番号順に並べる (0=L7上, 1=L7下, 2=L7左, 3=L7右, 4=L8上, ...)。
+// スロット番号順に並べる (0=グループ1の上, 1=同下, 2=同左, 3=同右, 4=グループ2の上, ...)。
 // 保存済みの割り当てがあればそちらが優先され、無ければここが使われる。
 &gesture_action {
     // 設定画面にスロット番号ではなくこの名前が出る。
     slot-names =
-        "L7 Up", "L7 Down", "L7 Left", "L7 Right",
-        "L8 Up", "L8 Down", "L8 Left", "L8 Right",
-        "L9 Up", "L9 Down", "L9 Left", "L9 Right",
-        "L10 Up", "L10 Down", "L10 Left", "L10 Right";
+        "G1 Up", "G1 Down", "G1 Left", "G1 Right",
+        "G2 Up", "G2 Down", "G2 Left", "G2 Right",
+        "G3 Up", "G3 Down", "G3 Left", "G3 Right",
+        "G4 Up", "G4 Down", "G4 Left", "G4 Right",
+        "G5 Up", "G5 Down", "G5 Left", "G5 Right",
+        "G6 Up", "G6 Down", "G6 Left", "G6 Right";
 
     default-bindings =
-        // --- レイヤー7: ブラウザのタブ操作 ---
+        // --- グループ1: ブラウザのタブ操作 ---
         <&kp LC(T)>,            //上: 新しいタブ
         <&kp LC(W)>,            //下: タブを閉じる
         <&kp LC(LS(TAB))>,      //左: 前のタブ
         <&kp LC(TAB)>,          //右: 次のタブ
-        // --- レイヤー8: 仮想デスクトップ / ウィンドウ ---
+        // --- グループ2: 仮想デスクトップ / ウィンドウ ---
         <&kp LG(TAB)>,          //上: タスクビュー
         <&kp LG(D)>,            //下: デスクトップ表示
         <&kp LC(LG(LEFT))>,     //左: 仮想デスクトップ左
         <&kp LC(LG(RIGHT))>,    //右: 仮想デスクトップ右
-        // --- レイヤー9: ページ内ナビゲーション ---
+        // --- グループ3: ページ内ナビゲーション ---
         <&kp LC(HOME)>,         //上: 先頭へ
         <&kp LC(END)>,          //下: 末尾へ
         <&kp LA(LEFT)>,         //左: 戻る
         <&kp LA(RIGHT)>,        //右: 進む
-        // --- レイヤー10: 編集 ---
+        // --- グループ4: 編集 ---
         <&kp LC(Z)>,            //上: 元に戻す
         <&kp LC(Y)>,            //下: やり直し
         <&kp LC(C)>,            //左: コピー
         <&kp LC(V)>;            //右: 貼り付け
+        // グループ5・6 (slot 16〜23) は既定値なし。設定画面から割り当てる。
 };
 
 // スクロール用のランタイム入力プロセッサ。
