@@ -92,11 +92,14 @@
     // 注意1: process-next を付けていないため、ベースの input-processors は
     //        適用されない。X軸反転はジェスチャー側にも明示的に必要。
     // 注意2: これらのレイヤーにいる間はカーソルを止めたい。
-    //        モジュールの suppress-movement は ZMK_INPUT_PROC_STOP を返すが、
-    //        ZMK の input_listener.c がレイヤー上書き経路でその戻り値を
-    //        握り潰す(process-next 無しの場合 return 0)ため効かない。
-    //        回避策として末尾に <&zip_xy_scaler 0 1> を置き、X/Y の値を
-    //        0 に潰してカーソルを固定する。
+    //        モジュールの suppress-movement は使わない(意図的に外してある)。
+    //        あれは ZMK_INPUT_PROC_STOP を返すが、
+    //          (a) apply_config() は STOP を受けた時点でチェーンを打ち切るため
+    //              後段の zip_xy_scaler に到達しない
+    //          (b) input_listener.c はレイヤー上書き経路でその STOP を
+    //              握り潰す(process-next 無しなら return 0)
+    //        の二重の理由で、結局そのまま HID に流れてカーソルが動いてしまう。
+    //        代わりに末尾の <&zip_xy_scaler 0 1> で X/Y を 0 に潰して固定する。
     // 注意3: レイヤーを減らす場合は、下の子ノードと対応する zip_gesture_N、
     //        runtime_macro_defaults の該当エントリをまとめて削除する。
     //
@@ -164,8 +167,9 @@
         compatible = "zmk,input-processor-mouse-gesture";
         #input-processor-cells = <0>;
         always-active;          //レイヤー上書きで動作範囲が限定されるため専用の起動キーは不要
-        suppress-movement;      //ジェスチャー中はカーソルを動かさない
         enable-eager-mode;      //パターン確定時に即実行
+        gesture-cooldown-ms = <200>;  //発火後の待ち時間(既定500から短縮)
+        idle-reset-ms = <400>;        //中途半端な累積を400ms無操作で破棄
         stroke-size = <200>;    //1ストロークと判定する移動量。感度が合わなければここを調整
 
         gesture7_1 { pattern = <GESTURE_UP>;    bindings = <&rmacro 0>; };
@@ -178,8 +182,9 @@
         compatible = "zmk,input-processor-mouse-gesture";
         #input-processor-cells = <0>;
         always-active;
-        suppress-movement;
         enable-eager-mode;
+        gesture-cooldown-ms = <200>;
+        idle-reset-ms = <400>;
         stroke-size = <200>;
         movement-threshold = <5>;   //★微小移動を無視(ノイズ除去)
 
@@ -193,8 +198,9 @@
         compatible = "zmk,input-processor-mouse-gesture";
         #input-processor-cells = <0>;
         always-active;
-        suppress-movement;
         enable-eager-mode;
+        gesture-cooldown-ms = <200>;
+        idle-reset-ms = <400>;
         stroke-size = <350>;        //★ストロークを長めに
         movement-threshold = <5>;
 
@@ -208,8 +214,9 @@
         compatible = "zmk,input-processor-mouse-gesture";
         #input-processor-cells = <0>;
         always-active;
-        suppress-movement;
         enable-eager-mode;
+        gesture-cooldown-ms = <200>;
+        idle-reset-ms = <400>;
         stroke-size = <200>;
         movement-threshold = <5>;
 

@@ -10,6 +10,8 @@ manifest:
       url-base: https://github.com/takamaru-fpv
     - name: kot149     # <-- Mouse gesture
       url-base: https://github.com/kot149
+    - name: jpttm      # <-- Mouse gesture (idle-reset-ms 追加版フォーク)
+      url-base: https://github.com/jpttm
 
   projects:
     # ZMK: DYA Studio 用カスタム RPC サブシステム付き cormoran fork
@@ -79,8 +81,10 @@ manifest:
     - name: zmk-feature-non-lipo-battery-management
       remote: takamaru-fpv
       revision: voltage_division
+    # 本家 kot149/zmk-mouse-gesture の v1 に idle-reset-ms を追加したフォーク。
+    # 未完成ジェスチャーの累積が消えず誤爆する問題への対処。本家へのPR後に戻す。
     - name: zmk-mouse-gesture
-      remote: kot149
-      revision: v1
+      remote: jpttm
+      revision: v1-idle-reset
   self:
     path: config
