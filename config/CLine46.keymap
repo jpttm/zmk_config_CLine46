@@ -110,12 +110,45 @@
         };
 
 
+        // レイヤー6〜9 はマウスジェスチャー専用。
+        // このレイヤーにいる間トラックボールはジェスチャー認識に占有され、
+        // カーソルは動きません(CLine46_R.overlay の suppress-movement)。
         layer_6 {
             bindings = <
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
-         &trans   &trans   &trans   &trans   &trans   &trans      &trans   &trans                     &trans   &trans 
+         &trans   &trans   &trans   &trans   &trans   &trans      &trans   &trans                     &trans   &trans
+            >;
+        };
+
+
+        layer_7 {
+            bindings = <
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+         &trans   &trans   &trans   &trans   &trans   &trans      &trans   &trans                     &trans   &trans
+            >;
+        };
+
+
+        layer_8 {
+            bindings = <
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+         &trans   &trans   &trans   &trans   &trans   &trans      &trans   &trans                     &trans   &trans
+            >;
+        };
+
+
+        layer_9 {
+            bindings = <
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+&trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
+         &trans   &trans   &trans   &trans   &trans   &trans      &trans   &trans                     &trans   &trans
             >;
         };
     };
