@@ -124,7 +124,12 @@
         // このレイヤーにいる間トラックボールはジェスチャー認識に占有され、
         // カーソルは動きません(CLine46_R.overlay の suppress-movement)。
         // 通常のキー入力は &trans のまま下位レイヤーに透過する。
+        //
+        // display-name は DYA Studio や設定ツールの一覧に出る名前。
+        // これらのレイヤーを増やしたのはこのファームウェアなので、名前も
+        // ここで付けておく。DYA Studio で変更するとそちらが保存され優先される。
         layer_7 {
+            display-name = "GESTURE1";
             bindings = <
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
@@ -135,6 +140,7 @@
 
 
         layer_8 {
+            display-name = "GESTURE2";
             bindings = <
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
@@ -145,6 +151,7 @@
 
 
         layer_9 {
+            display-name = "GESTURE3";
             bindings = <
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
@@ -155,6 +162,7 @@
 
 
         layer_10 {
+            display-name = "GESTURE4";
             bindings = <
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
 &trans   &trans   &trans   &trans   &trans   &trans                        &trans   &trans   &trans   &trans   &trans   &trans
