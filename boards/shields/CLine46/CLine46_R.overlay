@@ -139,7 +139,6 @@
         suppress-movement;      //有効なレイヤーではカーソルを固定
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
-        idle-reset-ms = <400>;
         stroke-size = <100>;      //縦横とも約4.2mm
         movement-threshold = <5>; //微小移動を無視(ノイズ除去)
 
@@ -159,7 +158,6 @@
         suppress-movement;
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
-        idle-reset-ms = <400>;
         stroke-size = <100>;
         movement-threshold = <5>;
 
@@ -179,7 +177,6 @@
         suppress-movement;
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
-        idle-reset-ms = <400>;
         stroke-size = <100>;
         movement-threshold = <5>;
 
@@ -199,7 +196,6 @@
         suppress-movement;
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
-        idle-reset-ms = <400>;
         stroke-size = <100>;
         movement-threshold = <5>;
 
@@ -219,7 +215,6 @@
         suppress-movement;
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
-        idle-reset-ms = <400>;
         stroke-size = <100>;
         movement-threshold = <5>;
 
@@ -239,7 +234,6 @@
         suppress-movement;
         enable-eager-mode;
         gesture-cooldown-ms = <200>;
-        idle-reset-ms = <400>;
         stroke-size = <100>;
         movement-threshold = <5>;
 
