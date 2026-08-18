@@ -94,6 +94,7 @@
             <&zip_xy_transform INPUT_TRANSFORM_Y_INVERT>,       //Y軸反転
             <&zip_xy_to_scroll_mapper>,                         //スクロールモードに変更
             <&zip_scroll_transform INPUT_TRANSFORM_X_INVERT>,   //スクロールのX軸反転
+            <&scroll_inertia_2d>,                               //慣性スクロール(実験中)
             <&scroll_runtime_input_processor>;                  //スクロール量・軸スナップをDYA Studioから調整可能に
     };
 };
@@ -101,6 +102,26 @@
 // ジェスチャー本体(プロセッサ6個・スロット名・初期値)はモジュール同梱の
 // プリセット <presets/gesture_six_groups.dtsi> が定義する。グループ1〜4は
 // 既定のレイヤー7〜10のままなので、ここで上書きするものは無い。
+
+/ {
+    // 慣性スクロール。フリックしてボールを離すと、スクロールが減衰しながら続く。
+    //
+    // 惰性中の出力はプロセッサチェーンを通らず HID に直接注入されるため、
+    //   - チェーン内の配置は「反転の後」でなければならない (でないと惰性だけ逆向きになる)
+    //   - 後段の倍率をこのノード自身に教える必要がある (scale / scale-div)
+    // scale-div = 8 は scroll_runtime_input_processor の初期値と同じ。DYA Studio で
+    // 倍率を変えた場合、指で回している間は追従するが惰性はこの値のまま走る。
+    //
+    // axis = 0 は自由2D。従来のスクロール挙動を変えずに惰性だけ足す設定。
+    scroll_inertia_2d: scroll_inertia_2d {
+        compatible = "zmk,input-processor-scroll-inertia";
+        #input-processor-cells = <0>;
+        axis = <0>;
+        layer = <3>;
+        scale = <1>;
+        scale-div = <8>;
+    };
+};
 
 // ジェスチャー各スロットの初期値。
 // スロット番号順に並べる (0=グループ1の上, 1=同下, 2=同左, 3=同右, 4=グループ2の上, ...)。
