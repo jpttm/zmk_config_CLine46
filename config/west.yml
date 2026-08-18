@@ -55,6 +55,9 @@ manifest:
     - name: zmk-feature-watchdog
       remote: cormoran
       revision: 84ad14c6c3645dc40b23f45d08ab45418655f912
+    - name: zmk-feature-studio-rpc-perf
+      remote: cormoran
+      revision: main
     - name: zmk-feature-kscan-diagnostics
       remote: cormoran
       revision: 1432f7fe0cfe903cd7d3c9931ae6bd6f2e1f328e
