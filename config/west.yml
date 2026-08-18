@@ -8,11 +8,10 @@ manifest:
       url-base: https://github.com/caksoylar
     - name: takamaru-fpv  # <-- Battery level smoothing
       url-base: https://github.com/takamaru-fpv
-    - name: kot149  # <-- Layout shift
+    - name: kot149     # <-- Mouse gesture / Layout shift
       url-base: https://github.com/kot149
-    - name: kot149     # <-- Mouse gesture
-      url-base: https://github.com/kot149
-    - name: jpttm      url-base: https://github.com/jpttm
+    - name: jpttm      # <-- Mouse gesture (active-layers 追加版フォーク)
+      url-base: https://github.com/jpttm
 
   projects:
     # ZMK: DYA Studio 用カスタム RPC サブシステム付き cormoran fork
